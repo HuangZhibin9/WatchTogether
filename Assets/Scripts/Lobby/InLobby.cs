@@ -20,6 +20,7 @@ public class InLobby : MonoBehaviour
     [SerializeField] private Transform container;
 
     [SerializeField] private Button startButton;
+    [SerializeField] private GameObject waitPanel;
 
     private void Awake()
     {
@@ -30,6 +31,12 @@ public class InLobby : MonoBehaviour
         leaveLobbyButton.onClick.AddListener(() =>
         {
             MyLobbyManager.Instance.LeaveLobby();
+        });
+
+        startButton.onClick.AddListener(() =>
+        {
+            waitPanel.SetActive(true);
+            MyLobbyManager.Instance.StartWatchAsync();
         });
     }
 

@@ -2,6 +2,8 @@ using Sirenix.OdinInspector;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Unity.Services.Authentication;
 using Unity.Services.Core;
 using Unity.Services.Lobbies;
@@ -14,6 +16,7 @@ public class MyLobbyManager : MonoBehaviour
 
     public const string KEY_PLAYER_NAME = "PlayerName";
     public const string KEY_PLAYER_CHARACTER = "PlayerCharacter";
+    public const string KEY_START_GAME = "StartGame";
 
     public event Action OnLeftLobby;
 
@@ -24,6 +27,8 @@ public class MyLobbyManager : MonoBehaviour
     public event Action<Lobby> OnKickedFromLobby;
 
     public event Action<List<Lobby>> OnLobbyListChanged;
+
+    public event Action OnGameStarted;
 
     public enum PlayerCharacter
     {
@@ -97,6 +102,8 @@ public class MyLobbyManager : MonoBehaviour
             lobbyPollTimer -= Time.deltaTime;
             if (lobbyPollTimer <= 0f)
             {
+                Debug.Log("joinedLobby.Players.Count: " + joinedLobby.Players.Count);
+
                 float lobbyPollTimerMax = 1.1f;
                 lobbyPollTimer = lobbyPollTimerMax;
 
@@ -108,6 +115,30 @@ public class MyLobbyManager : MonoBehaviour
                     Debug.Log("Kicked from lobby");
                     OnKickedFromLobby?.Invoke(joinedLobby);
                     joinedLobby = null;
+                }
+
+                if (joinedLobby.Data[KEY_START_GAME].Value != "0")
+                {
+                    Debug.Log("Start Game");
+                    if (!IsLobbyHost())
+                    {
+                        RelayManager.Instance.JoinRelayAsync(joinedLobby.Data[KEY_START_GAME].Value);
+                        if (joinedLobby != null)
+                        {
+                            try
+                            {
+                                await LobbyService.Instance.RemovePlayerAsync(joinedLobby.Id, AuthenticationService.Instance.PlayerId);
+                                Debug.Log("Leave the lobby : " + joinedLobby.Name);
+                                joinedLobby = null;
+                            }
+                            catch (LobbyServiceException e)
+                            {
+                                Debug.Log(e);
+                            }
+                        }
+                    }
+
+                    OnGameStarted?.Invoke();
                 }
             }
         }
@@ -156,6 +187,10 @@ public class MyLobbyManager : MonoBehaviour
         {
             Player = player,
             IsPrivate = isPrivate,
+            Data = new Dictionary<string, DataObject>()
+            {
+                { KEY_START_GAME, new DataObject(DataObject.VisibilityOptions.Member, "0") }
+            }
         };
 
         Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, options);
@@ -335,6 +370,33 @@ public class MyLobbyManager : MonoBehaviour
             try
             {
                 await LobbyService.Instance.RemovePlayerAsync(joinedLobby.Id, playerId);
+            }
+            catch (LobbyServiceException e)
+            {
+                Debug.Log(e);
+            }
+        }
+    }
+
+    public async void StartWatchAsync()
+    {
+        if (IsLobbyHost())
+        {
+            try
+            {
+                Debug.Log("Start Watch!");
+
+                string relayCode = await RelayManager.Instance.CreateRelay(joinedLobby.Players.Count);
+                Debug.Log("joinedLobby.Players.Count: " + joinedLobby.Players.Count);
+                Lobby lobby = await Lobbies.Instance.UpdateLobbyAsync(joinedLobby.Id,
+                    new UpdateLobbyOptions
+                    {
+                        Data = new Dictionary<string, DataObject>
+                        {
+                            {KEY_START_GAME, new DataObject(DataObject.VisibilityOptions.Member, relayCode)}
+                        }
+                    });
+                joinedLobby = lobby;
             }
             catch (LobbyServiceException e)
             {
