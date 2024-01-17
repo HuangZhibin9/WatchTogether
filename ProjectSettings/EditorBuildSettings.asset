@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/LobbyScene.unity
+    path: Assets/Scenes/WatchTogether.unity
     guid: de3e88906bd28c84aad102df53909d8d
   m_configObjects: {}
