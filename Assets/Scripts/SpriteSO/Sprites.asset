@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4e9982d5fceaf34ea98139a80c0ab33, type: 3}
+  m_Name: Sprites
+  m_EditorClassIdentifier: 
+  Anon: {fileID: 21300000, guid: 5fdd735d2a3038d43b14fbe164aff214, type: 3}
+  Soyo: {fileID: 21300000, guid: 14e970d7a85637644bbccf2abc701dbb, type: 3}
+  Taki: {fileID: 21300000, guid: 02e0bb237b8f28a4ea1dcdb6b3fabf05, type: 3}
+  Rana: {fileID: 21300000, guid: 0b8ebfd7e450205428c991747ef60e15, type: 3}
+  Tomori: {fileID: 21300000, guid: 1f18ea6fb0f0a594ba57f4fecddcece9, type: 3}
