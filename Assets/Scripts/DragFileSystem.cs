@@ -8,6 +8,7 @@ using UnityEngine.Video;
 public class DragFileSystem : MonoBehaviour
 {
     [SerializeField] private VideoPlayer videoPlayer;
+    [SerializeField] private VideoManager videoManager;
     private DropInfo dropInfo = null;
 
     [FilePath]
@@ -58,7 +59,7 @@ public class DragFileSystem : MonoBehaviour
     [Button]
     public void testfun()
     {
-        LoadVideo(new DropInfo { file = testPath });
+        LoadVideo(testPath);
     }
 
     private void LoadVideo(DropInfo aInfo)
@@ -72,8 +73,16 @@ public class DragFileSystem : MonoBehaviour
         videoPlayer.prepareCompleted += VideoPlayer_prepareCompleted;
     }
 
+    [Button]
+    private void LoadVideo(string file)
+    {
+        videoPlayer.url = "file://" + file;
+        videoPlayer.Prepare();
+        videoPlayer.prepareCompleted += VideoPlayer_prepareCompleted;
+    }
+
     private void VideoPlayer_prepareCompleted(VideoPlayer source)
     {
-        source.Play();
+        videoManager.OnVideoPrepared();
     }
 }

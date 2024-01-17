@@ -11,7 +11,7 @@ public class InputManager : MonoBehaviour
     public static InputManager Instance;
     public InputController inputController;
 
-    public event Action PauseOrPlayButtonPressed;
+    public event Action<InputAction.CallbackContext> PauseOrPlayButtonPressed;
 
     public event Action PauseOrPlayButtonReleased;
 
@@ -22,11 +22,7 @@ public class InputManager : MonoBehaviour
 
         inputController.Input.PauseOrPlay.started += (context) =>
         {
-            if (context.control.path == "/Mouse/leftButton" && InBottomUI.isInBottomUIZone)
-            {
-                return;
-            }
-            PauseOrPlayButtonPressed?.Invoke();
+            PauseOrPlayButtonPressed?.Invoke(context);
         };
         inputController.Input.PauseOrPlay.canceled += (context) =>
         {

@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 
 public class InBottomUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
-    [ReadOnly]
+    [ShowInInspector, ReadOnly]
     public static bool isInBottomUIZone = false;
 
     public void OnPointerEnter(PointerEventData eventData)

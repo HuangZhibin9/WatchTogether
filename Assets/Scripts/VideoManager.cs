@@ -1,18 +1,18 @@
 using Sirenix.OdinInspector;
 using System;
 using System.Collections;
-using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.Video;
-using UnityEngine.EventSystems;
-using UnityEngine.UIElements;
 
 public class VideoManager : MonoBehaviour
 {
     public static VideoManager Instance;
     [SerializeField] private VideoPlayer videoPlayer;
-    [ShowInInspector, ReadOnly] private bool isPlaying = false;
+    [ReadOnly] public bool videoClipPrepared = false;
+    [ShowInInspector, ReadOnly] public bool isPlaying = false;
 
     [BoxGroup("Bottom UI Show")]
     [SerializeField] private GameObject bottomUI;
@@ -26,16 +26,50 @@ public class VideoManager : MonoBehaviour
     [BoxGroup("Bottom UI Show")]
     [SerializeField] private float bottomUIHideTimeMaximun = 3f;
 
+    [BoxGroup("PlayButton")]
+    [SerializeField] private Button playButton;
+
+    [BoxGroup("PlayButton")]
+    [SerializeField] private Button pauseButton;
+
+    [BoxGroup("ProgressBar")]
+    [SerializeField] private Slider progressBar;
+
+    [BoxGroup("ProgressBar")]
+    [SerializeField] private bool isDrag = false;
+
+    [BoxGroup("ProgressTime")]
+    [SerializeField] private TextMeshProUGUI timeText;
+
+    [BoxGroup("ProgressTime")]
+    [SerializeField, ReadOnly] private string videoMaxTime;
+
+    [BoxGroup("Volume")]
+    [SerializeField] private Slider volumeBar;
+
+    [BoxGroup("Volume")]
+    [SerializeField] private TextMeshProUGUI volumeText;
+
+    [BoxGroup("Volume")]
+    [SerializeField] private AudioSource audioSource;
+
     private void Awake()
     {
         Instance = this;
+        ResetProgress();
+
+        ReadVolume();
     }
 
     private void Start()
     {
         InputManager.Instance.PauseOrPlayButtonPressed += PauseOrPlay;
+        InputManager.Instance.PauseOrPlayButtonPressed += MouseButtonPressed;
+        InputManager.Instance.PauseOrPlayButtonReleased += MouseButtonReleased;
         PointerMove.PointerMoveEvent += OnPointerMove;
 
+        progressBar.onValueChanged.AddListener(OnProgressBarChanged);
+        volumeBar.onValueChanged.AddListener(SetVolume);
         bottomUI.SetActive(false);
     }
 
@@ -52,19 +86,45 @@ public class VideoManager : MonoBehaviour
         }
     }
 
-    private void PauseOrPlay()
+    private void PauseOrPlay(InputAction.CallbackContext context)
     {
-        if (InBottomUI.isInBottomUIZone)
-            if (isPlaying)
-            {
-                videoPlayer.Pause();
-                isPlaying = false;
-            }
-            else
-            {
-                videoPlayer.Play();
-                isPlaying = true;
-            }
+        if (context.control.path == "/Mouse/leftButton" && InBottomUI.isInBottomUIZone)
+        {
+            Debug.Log("Return");
+            return;
+        }
+        if (isPlaying)
+        {
+            videoPlayer.Pause();
+            isPlaying = false;
+        }
+        else
+        {
+            videoPlayer.Play();
+            isPlaying = true;
+        }
+    }
+
+    [Button]
+    public void OnVideoPrepared()
+    {
+        videoMaxTime = TimeToString((int)videoPlayer.length);
+        videoClipPrepared = true;
+        StartCoroutine(UpdateProgressText());
+        StartCoroutine(UpdateProgressBar());
+        Play();
+    }
+
+    public void Play()
+    {
+        videoPlayer.Play();
+        isPlaying = true;
+    }
+
+    public void Pause()
+    {
+        videoPlayer.Pause();
+        isPlaying = false;
     }
 
     public void OnPointerMove()
@@ -74,6 +134,51 @@ public class VideoManager : MonoBehaviour
         bottomUI.GetComponent<CanvasGroup>().alpha = 0.97f;
         isBottomUIVisible = true;
         bottomUIHideTime = bottomUIHideTimeMaximun;
+    }
+
+    public void OnProgressBarChanged(float value)
+    {
+        videoPlayer.time = value * videoPlayer.length;
+    }
+
+    public void MouseButtonPressed(InputAction.CallbackContext context)
+    {
+        isDrag = true;
+    }
+
+    public void MouseButtonReleased()
+    {
+        isDrag = false;
+    }
+
+    public void ResetProgress()
+    {
+        timeText.text = "00:00:00 / 00:00:00";
+        progressBar.value = 0;
+    }
+
+    public void SetVolume(float value)
+    {
+        audioSource.volume = value;
+        volumeText.text = ((int)(value * 100)).ToString();
+        SaveVolume();
+    }
+
+    public void ReadVolume()
+    {
+        if (PlayerPrefs.HasKey("volume"))
+        {
+            float value = PlayerPrefs.GetFloat("volume");
+            audioSource.volume = value;
+            volumeBar.value = value;
+            volumeText.text = ((int)(value * 100)).ToString();
+        }
+    }
+
+    public void SaveVolume()
+    {
+        PlayerPrefs.SetFloat("volume", audioSource.volume);
+        PlayerPrefs.Save();
     }
 
     private IEnumerator HideBottomUI()
@@ -92,5 +197,45 @@ public class VideoManager : MonoBehaviour
             }
             yield return wait;
         }
+    }
+
+    private IEnumerator UpdateProgressBar()
+    {
+        WaitForSeconds wait = new WaitForSeconds(1f);
+        while (videoClipPrepared)
+        {
+            if (!isDrag)
+            {
+                progressBar.SetValueWithoutNotify((float)(videoPlayer.time / videoPlayer.length));
+            }
+            yield return wait;
+        }
+    }
+
+    private IEnumerator UpdateProgressText()
+    {
+        WaitForSeconds wait = new WaitForSeconds(1f);
+        while (videoClipPrepared)
+        {
+            if (!isDrag)
+            {
+                string currentTime = TimeToString((int)videoPlayer.time);
+                timeText.text = currentTime + " / " + videoMaxTime;
+            }
+            yield return wait;
+        }
+    }
+
+    public static string TimeToString(int time)
+    {
+        int currentTime = time;
+        int hour = Mathf.FloorToInt(currentTime / 3600f);
+        currentTime = currentTime - hour * 3600;
+        int minute = Mathf.FloorToInt(currentTime / 60f);
+        currentTime = currentTime - minute * 60;
+        int second = currentTime;
+
+        string s = hour.ToString("00") + ":" + minute.ToString("00") + ":" + second.ToString("00");
+        return s;
     }
 }

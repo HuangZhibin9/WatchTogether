@@ -35,15 +35,6 @@ public partial class @InputController: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""MouseMove"",
-                    ""type"": ""Value"",
-                    ""id"": ""36de041f-bb27-414e-a90f-e14bae25f66f"",
-                    ""expectedControlType"": ""Vector2"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -68,17 +59,6 @@ public partial class @InputController: IInputActionCollection2, IDisposable
                     ""action"": ""PauseOrPlay"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""765b6c2b-a128-4661-8a20-c5282bfde0a3"",
-                    ""path"": ""<Mouse>/delta"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""MouseMove"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -88,7 +68,6 @@ public partial class @InputController: IInputActionCollection2, IDisposable
         // Input
         m_Input = asset.FindActionMap("Input", throwIfNotFound: true);
         m_Input_PauseOrPlay = m_Input.FindAction("PauseOrPlay", throwIfNotFound: true);
-        m_Input_MouseMove = m_Input.FindAction("MouseMove", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -151,13 +130,11 @@ public partial class @InputController: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_Input;
     private List<IInputActions> m_InputActionsCallbackInterfaces = new List<IInputActions>();
     private readonly InputAction m_Input_PauseOrPlay;
-    private readonly InputAction m_Input_MouseMove;
     public struct InputActions
     {
         private @InputController m_Wrapper;
         public InputActions(@InputController wrapper) { m_Wrapper = wrapper; }
         public InputAction @PauseOrPlay => m_Wrapper.m_Input_PauseOrPlay;
-        public InputAction @MouseMove => m_Wrapper.m_Input_MouseMove;
         public InputActionMap Get() { return m_Wrapper.m_Input; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -170,9 +147,6 @@ public partial class @InputController: IInputActionCollection2, IDisposable
             @PauseOrPlay.started += instance.OnPauseOrPlay;
             @PauseOrPlay.performed += instance.OnPauseOrPlay;
             @PauseOrPlay.canceled += instance.OnPauseOrPlay;
-            @MouseMove.started += instance.OnMouseMove;
-            @MouseMove.performed += instance.OnMouseMove;
-            @MouseMove.canceled += instance.OnMouseMove;
         }
 
         private void UnregisterCallbacks(IInputActions instance)
@@ -180,9 +154,6 @@ public partial class @InputController: IInputActionCollection2, IDisposable
             @PauseOrPlay.started -= instance.OnPauseOrPlay;
             @PauseOrPlay.performed -= instance.OnPauseOrPlay;
             @PauseOrPlay.canceled -= instance.OnPauseOrPlay;
-            @MouseMove.started -= instance.OnMouseMove;
-            @MouseMove.performed -= instance.OnMouseMove;
-            @MouseMove.canceled -= instance.OnMouseMove;
         }
 
         public void RemoveCallbacks(IInputActions instance)
@@ -203,6 +174,5 @@ public partial class @InputController: IInputActionCollection2, IDisposable
     public interface IInputActions
     {
         void OnPauseOrPlay(InputAction.CallbackContext context);
-        void OnMouseMove(InputAction.CallbackContext context);
     }
 }
