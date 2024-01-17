@@ -11,10 +11,10 @@ public class Test : MonoBehaviour
     //public void SavePng()
     //{
     //    Texture2D _vloume;
-    //    _vloume = SdfIcons.CreateTransparentIconTexture(SdfIconType.X, Color.white, 200, 200, 0);
+    //    _vloume = SdfIcons.CreateTransparentIconTexture(SdfIconType.FullscreenExit, Color.white, 200, 200, 0);
     //    byte[] playIconData = _vloume.EncodeToPNG();
-    //    File.WriteAllBytes(Path.Combine(Application.persistentDataPath, "X.png"), playIconData);
+    //    File.WriteAllBytes(Path.Combine(Application.persistentDataPath, "FullscreenExit.png"), playIconData);
     //    Debug.Log(Application.persistentDataPath);
-    //    Debug.Log("SavePng: " + Path.Combine(Application.persistentDataPath, "X.png"));
+    //    Debug.Log("SavePng: " + Path.Combine(Application.persistentDataPath, "FullscreenExit.png"));
     //}
 }

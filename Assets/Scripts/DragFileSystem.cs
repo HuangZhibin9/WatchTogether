@@ -20,6 +20,11 @@ public class DragFileSystem : MonoBehaviour
         public Vector2 pos;
     }
 
+    private void Start()
+    {
+        //gameObject.SetActive(false);
+    }
+
     private void OnEnable()
     {
         UnityDragAndDropHook.InstallHook();

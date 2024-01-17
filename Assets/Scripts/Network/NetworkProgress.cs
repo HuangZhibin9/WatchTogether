@@ -6,47 +6,40 @@ using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Video;
 
 public class NetworkProgress : NetworkBehaviour
 {
-    [SerializeField] private TextMeshProUGUI clientProgressText;
     [SerializeField] private TextMeshProUGUI hostProgressText;
 
     [SerializeField] private Button syncWithServerButton;
-    [SerializeField] private Button syncAllClientButton;
+    [SerializeField] private Button syncOtherClientButton;
+
+    [SerializeField] private VideoPlayer videoPlayer;
+    [SerializeField] private GameObject dragSystem;
 
     public bool started = false;
 
     public NetworkVariable<float> hostProgress = new NetworkVariable<float>(0);
 
     public float clientProgress = 0;
+    public float offset = 0.3f;
 
     public override void OnNetworkSpawn()
     {
         syncWithServerButton.onClick.AddListener(() =>
         {
             Debug.Log("Client Ask Sync: " + clientProgress.ToString());
-            TextToServer_ServerRpc();
-            clientProgress = hostProgress.Value;
+            videoPlayer.time = hostProgress.Value + offset;
+            VideoManager.Instance.Play();
         });
-        syncAllClientButton.onClick.AddListener(() =>
+        syncOtherClientButton.onClick.AddListener(() =>
         {
-            OnHostSyncButtonClick_ClientRpc();
+            OnAskSyncButtonClick_ClientRpc();
         });
-
-        if (IsServer)
-        {
-            syncAllClientButton.gameObject.SetActive(true);
-            syncWithServerButton.gameObject.SetActive(false);
-        }
-        else
-        {
-            syncAllClientButton.gameObject.SetActive(false);
-            syncWithServerButton.gameObject.SetActive(true);
-        }
 
         started = true;
-
+        dragSystem.SetActive(true);
         Debug.Log("Success Spawned!");
     }
 
@@ -56,7 +49,7 @@ public class NetworkProgress : NetworkBehaviour
         {
             return;
         }
-        clientProgress += Time.deltaTime;
+        clientProgress = (float)videoPlayer.time;
         if (IsServer)
         {
             hostProgress.Value = clientProgress;
@@ -76,20 +69,15 @@ public class NetworkProgress : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void OnHostSyncButtonClick_ClientRpc()
+    public void OnAskSyncButtonClick_ClientRpc()
     {
-        if (!IsServer)
+        VideoManager.Instance.Play();
+        if (IsHost) return;
+        if (videoPlayer.isPrepared && videoPlayer.length > hostProgress.Value)
         {
-            clientProgress = hostProgress.Value;
-            Debug.Log("Server Ask Sync: " + clientProgress.ToString(".00"));
+            videoPlayer.time = hostProgress.Value + offset;
         }
-        Debug.Log("Ask Client Sync: " + clientProgress.ToString(".00"));
-    }
-
-    [ServerRpc]
-    public void TextToServer_ServerRpc()
-    {
-        Debug.Log("Client Ask Sync: ");
+        Debug.Log("Server Ask Sync: " + clientProgress.ToString(".00"));
     }
 
     public void SetClientProgress(float value)
@@ -101,8 +89,6 @@ public class NetworkProgress : NetworkBehaviour
     private void Update()
     {
         UpdateClientProgress();
-
-        clientProgressText.text = "Local Progress: " + clientProgress.ToString("000.00");
-        hostProgressText.text = "Host Progress: " + hostProgress.Value.ToString("000.00");
+        hostProgressText.text = VideoManager.TimeToString((int)hostProgress.Value);
     }
 }

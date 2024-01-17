@@ -62,10 +62,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 835685554fedb8340a0c3196456977d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  clientProgressText: {fileID: 0}
   hostProgressText: {fileID: 0}
   syncWithServerButton: {fileID: 0}
-  syncAllClientButton: {fileID: 0}
+  syncOtherClientButton: {fileID: 0}
+  videoPlayer: {fileID: 0}
+  dragSystem: {fileID: 0}
   started: 0
   hostProgress:
     m_InternalValue: 0

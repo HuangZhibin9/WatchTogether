@@ -45,6 +45,15 @@ public class VideoManager : MonoBehaviour
     [SerializeField, ReadOnly] private string videoMaxTime;
 
     [BoxGroup("Volume")]
+    private float preVolume;
+
+    [BoxGroup("Volume")]
+    [SerializeField] private Button muteButton;
+
+    [BoxGroup("Volume")]
+    [SerializeField] private Button unmuteButton;
+
+    [BoxGroup("Volume")]
     [SerializeField] private Slider volumeBar;
 
     [BoxGroup("Volume")]
@@ -70,6 +79,25 @@ public class VideoManager : MonoBehaviour
 
         progressBar.onValueChanged.AddListener(OnProgressBarChanged);
         volumeBar.onValueChanged.AddListener(SetVolume);
+        playButton.onClick.AddListener(Play);
+        pauseButton.onClick.AddListener(Pause);
+        muteButton.onClick.AddListener(() =>
+        {
+            preVolume = audioSource.volume;
+            audioSource.volume = 0;
+            volumeBar.value = 0;
+            volumeText.text = "0";
+            unmuteButton.gameObject.SetActive(true);
+            muteButton.gameObject.SetActive(false);
+        });
+        unmuteButton.onClick.AddListener(() =>
+        {
+            audioSource.volume = preVolume;
+            volumeBar.value = preVolume;
+            volumeText.text = ((int)(preVolume * 100)).ToString();
+            muteButton.gameObject.SetActive(true);
+            unmuteButton.gameObject.SetActive(false);
+        });
         bottomUI.SetActive(false);
     }
 
